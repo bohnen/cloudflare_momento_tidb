@@ -25,14 +25,23 @@ codespaces上ではコールバックを受け付けられないため、次の�
 
 これでログインは完了です。
 
-## 2. 必要なライブラリをインストールする
+## 2. データベース接続文字列をシークレットに設定する
+
+下記のコマンドでシークレット `DATABASE_URL`にDB接続文字列を設定します。接続文字列はTiDB ServerlessのConnectメニューから、
+`Serverless Driver` を選択して取得することができます。
+
+```bash
+wrangler secret put DATABASE_URL
+```
+
+## 3. 必要なライブラリをインストールする
 
 ```bash
 cd tidb-cloud-cloudflare
 npm install 
 ```
 
-## 3. デプロイする
+## 4. デプロイする
 
 ```bash
 npx wrangler deploy
@@ -40,12 +49,12 @@ npx wrangler deploy
 
 デプロイが完了したら、表示されたURLにアクセスすると、データベースの一覧が表示されます。
 
-## 4. テーブルを作成する
+## 5. テーブルを作成する
 
 `CREATE_TABLE.sql` に必要なDDLが含まれているので、TiDB ServerlessのChat2Queryで実行します。
 また、codespacesにはSQL Tools拡張がインストールされているので、TiDBへの接続を作成してそこから実行しても構いません。
 
-## 5. コードを修正して再度デプロイする
+## 6. コードを修正して再度デプロイする
 
 ソースコード中のコメントになっている部分のコメントを外して、再度デプロイします。
 デプロイ後に表示されるURLにアクセスすると、テーブルの中身が表示されます。
