@@ -6,7 +6,7 @@
 	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/cloudflare-wrangler:1": {}
-	}
+	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -19,6 +19,14 @@
 
 	// Configure tool-specific properties.
 	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"mtxr.sqltools",
+				"mtxr.sqltools-driver-mysql"
+			]
+		}
+	}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
