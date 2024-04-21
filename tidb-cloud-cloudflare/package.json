@@ -13,6 +13,6 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
-    "@tidbcloud/serverless": "^0.0.11-beta1"
+    "@tidbcloud/serverless": "^0.1.1"
   }
 }
