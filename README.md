@@ -1,9 +1,9 @@
-# Cloudflare Workers + TiDB Serverless 接続ワークショップ
+# Cloudflare Workers + Momento + TiDB Serverless 接続ワークショップ
 
-このリポジトリでは、[GitHub Codespaces](https://github.com/features/codespaces)を利用して、[Cloudflare Workers から TiDB Serverlessに接続する](https://zenn.dev/kameoncloud/articles/99d3ed9d5ce4fd) の内容を実行していくことが出来ます。
+このリポジトリでは、[GitHub Codespaces](https://github.com/features/codespaces)を利用して、[Cloudflare Workersを使って、TiDB Serverless のインラインキャッシュとしてMomentoを使うAPIサンプル](https://zenn.dev/kameoncloud/articles/a21e0dcb92b67d) の内容を実行していくことが出来ます。
 
-下記の手順の通りに実施することで、Cloudflare WorkersからTiDB Serverlessへの接続が実行できます。
-プログラムファイルを一から作りたい場合は、 `tidb-cloud-cloudflare` ディレクトリを削除して、`wrangler login`のステップを実行した後、ブログの流れを追ってください。
+下記の手順の通りに実施することで、ブログの内容通りに実装していくことができます。
+プログラムファイルを一から作りたい場合は、 `cloudflare-momento-tidb` ディレクトリを削除して、`wrangler login`のステップを実行した後、ブログの流れを追ってください。
 
 ## 0. GitHub Codespaces を起動する
 
