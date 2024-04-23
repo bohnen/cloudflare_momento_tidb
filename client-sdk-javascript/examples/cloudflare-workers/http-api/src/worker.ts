@@ -73,7 +73,7 @@ export default {
 		const makeRandomString = (length: number) => Math.random().toString(36).substring(2, length + 2);
 		const key = makeRandomString(10);
 		console.log(key);
-		const value = params.get('value');
+		const value = params.get('value') || '';
 		console.log(value);
 
 		// setting a value into cache
