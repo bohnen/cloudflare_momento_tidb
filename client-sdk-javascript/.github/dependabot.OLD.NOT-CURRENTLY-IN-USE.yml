@@ -1,0 +1,138 @@
+# NOTE: this file should be named `dependabot.yml`. We are temporarily disabling it
+#  because it ties up too many build resources by creating tons of parallel PRs whenever
+#  we do a new release. Until github has a solution for this issue:
+#
+# https://github.com/dependabot/dependabot-core/issues/2178
+#
+#  we will have to roll our own solution for this; there is now a script in the `scripts`
+#  dir that will update dependencies in the examples.
+#
+
+
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+#updates: 
+#
+########################################################################################################################
+#
+# NOTE: we have currently disabled dependabot because it doesn't work well with repos that have multiple projects in
+# them. The current setup was resulting in us having over a dozen PRs opened every time we did a release, and
+# each PR was running all of the CI tasks via github actions every time a new commit came in to main. This was consuming
+# all of our actions and preventing user-PRs from running through CI in a timely fashion.
+#
+# When this ticket is resolved, hopefully we can re-enable dependabot:
+#
+# https://github.com/dependabot/dependabot-core/issues/2178
+#
+# In the meantime we will rely on `scripts/update-all-examples-dependencies.sh` to update dependencies.
+#
+########################################################################################################################
+#
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/cache" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/lambda-examples/topics-microservice" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/lambda-examples/simple-get/lambda/simple-get" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/mongodb-examples/simple-read-aside" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/topics" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/load-gen" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/observability" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/access-control" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/aws" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/token-vending-machine/lambda/authorizer" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/nodejs/token-vending-machine/lambda/token-vending-machine" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/web/cache" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/web/nextjs-chat" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/web/vite-chat-app" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"
+#
+#  - package-ecosystem: "npm" # See documentation for possible values
+#    directory: "/examples/cloudflare-workers/web-sdk" # Location of package manifests
+#    schedule:
+#      interval: "daily"
+#    allow:
+#      - dependency-name: "@gomomento/*"

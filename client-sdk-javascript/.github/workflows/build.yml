@@ -1,0 +1,363 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: macos-latest
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Verify README generation
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: sdk
+          sdk_language: JavaScript
+          dev_docs_slug: nodejs
+          multiple_sdks: true
+
+      - name: Verify README generation for nodejs
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: sdk
+          sdk_language: Node.js
+          dev_docs_slug: nodejs
+          template_file: ./packages/client-sdk-nodejs/README.template.md
+          output_file: ./packages/client-sdk-nodejs/README.md
+
+      - name: Verify README generation for nodejs compression extension
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: alpha
+          project_type: other
+          template_file: ./packages/client-sdk-nodejs-compression/README.template.md
+          output_file: ./packages/client-sdk-nodejs-compression/README.md
+
+      - name: Verify README generation for web
+        uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
+        with:
+          project_status: official
+          project_stability: stable
+          project_type: sdk
+          sdk_language: "JavaScript Web"
+          dev_docs_slug: web
+          template_file: ./packages/client-sdk-web/README.template.md
+          output_file: ./packages/client-sdk-web/README.md
+
+      - name: Commitlint and Other Shared Build Steps
+        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  cache-tests:
+    strategy:
+      matrix:
+        node: [18]
+    name: Test Cache on Node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
+      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build and test all packages
+        run: |
+          node -v
+          ./scripts/build-and-test-all-packages.sh
+
+      - name: Run auth tests for packages
+        run: |
+          node -v
+          ./scripts/test-auth-packages.sh
+
+      - name: Run leaderboard tests for packages
+        run: |
+          node -v
+          ./scripts/test-leaderboard-packages.sh
+
+  test-examples:
+    strategy:
+      matrix:
+        node: [14, 16, 18]
+      fail-fast: true
+    name: Test examples on node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      # TODO: remove token stored as secret in favor of using a
+      # momento-local instance that can be spun up for testing
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install Deps and Build
+        id: validation
+        continue-on-error: true
+        run: |
+          pushd examples/nodejs/cache
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/observability
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/load-gen
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/topics
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/lambda-examples/topics-microservice
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/mongodb-examples/simple-read-aside
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/access-control
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/nodejs/aws
+            npm ci
+            npm run build
+          popd
+          pushd examples/nodejs/rate-limiter
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+
+      - name: Send CI failure mail
+        if: ${{ steps.validation.outcome == 'failure' }}
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
+        with:
+          username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
+          password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
+
+      - name: Flag Job Failure
+        if: ${{ steps.validation.outcome == 'failure' }}
+        run: exit 1
+
+  test-web-examples:
+    strategy:
+      matrix:
+        node: [ 16, 18 ]
+      fail-fast: true
+    name: Test web examples on node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      # TODO: remove token stored as secret in favor of using a
+      # momento-local instance that can be spun up for testing
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install Deps and Build
+        id: validation
+        continue-on-error: true
+        run: |
+          pushd examples/web/cache
+            npm ci
+            npm run build
+            npm run validate-examples
+          popd
+          pushd examples/web/nextjs-chat
+            npm ci
+            npm run build
+          popd
+          pushd examples/web/vite-chat-app
+            npm ci
+            npm run build
+          popd
+
+      - name: Send CI failure mail
+        if: ${{ steps.validation.outcome == 'failure' }}
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
+        with:
+          username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
+          password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
+
+      - name: Flag Job Failure
+        if: ${{ steps.validation.outcome == 'failure' }}
+        run: exit 1
+
+  test-deno-examples:
+    strategy:
+      matrix:
+        node: [ 16, 18 ]
+      fail-fast: true
+    name: Test Deno examples on node ${{ matrix.node }}
+    runs-on: macos-latest
+    env:
+      # TODO: remove token stored as secret in favor of using a
+      # momento-local instance that can be spun up for testing
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x # Run with latest stable Deno.
+
+      - name: Check formatting and Build
+        id: validation
+        continue-on-error: true
+        run: |
+          pushd examples/deno/web-sdk
+            deno lint
+            deno fmt --check
+            deno compile index.ts
+          popd
+          pushd examples/deno/http-api
+            deno lint
+            deno fmt --check
+            deno compile index.ts
+          popd
+
+      - name: Send CI failure mail
+        if: ${{ steps.validation.outcome == 'failure' }}
+        uses: momentohq/standards-and-practices/github-actions/error-email-action@gh-actions-v2
+        with:
+          username: ${{secrets.MOMENTO_ROBOT_GMAIL_USERNAME}}
+          password: ${{secrets.MOMENTO_ROBOT_GMAIL_PASSWORD}}
+
+      - name: Flag Job Failure
+        if: ${{ steps.validation.outcome == 'failure' }}
+        run: exit 1
+
+  verify-packages:
+    strategy:
+      matrix:
+        node: [ 18 ]
+      fail-fast: true
+    name: Verify packages are installable on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Build all packages
+        run: |
+          pushd packages/core
+            npm install
+            npm run build
+            npm pack
+          popd
+          pushd packages/common-integration-tests
+            npm install
+            npm run build
+            npm pack
+          popd
+          pushd packages/client-sdk-nodejs
+            npm install
+            npm run build
+            npm pack
+          popd
+          pushd packages/client-sdk-web
+            npm install
+            npm run build
+            npm pack
+          popd
+
+      - name: Locally install in nodejs example and verify it builds
+        run: |
+          pushd examples/nodejs/cache
+            # This is a bit of a hack, but ensures that the package-lock does not get corrupted
+            # due to installing these locally packaged files. All we care about is that the examples
+            # use the locally packaged sdks, and that they can build correctly with no errors
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/client-sdk-nodejs/gomomento-sdk-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i
+            npm run build
+          popd
+
+      - name: Locally install in web example and verify it builds
+        run: |
+          pushd examples/web/cache
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/core/gomomento-sdk-core-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i ../../../packages/client-sdk-web/gomomento-sdk-web-0.0.1.tgz
+            rm -rf node_modules package-lock.json
+            npm i
+            npm run build
+          popd
+  # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request
+  # dependabot-auto-merge:
+  #   name: Dependabot Auto Merge
+  #   permissions:
+  #     contents: write
+  #     pull-requests: write
+  #   runs-on: ubuntu-latest
+  #   # make sure we run all tests/examples and they pass before we try and auto approve/merge the dependabot prs
+  #   needs: [test-deno-examples, test-web-examples, test-examples, test, verify]
+  #   if: ${{ github.actor == 'dependabot[bot]' }}
+  #   steps:
+  #     - name: Dependabot metadata
+  #       id: metadata
+  #       uses: dependabot/fetch-metadata@v1
+  #       with:
+  #         github-token: "${{ secrets.GITHUB_TOKEN }}"
+  #     - name: Approve a PR
+  #       run: gh pr review --approve "$PR_URL"
+  #       env:
+  #         PR_URL: ${{github.event.pull_request.html_url}}
+  #         # need to have an approver first before dependabot can merge the pr, here we are using the shared
+  #         # momento github actions bot user
+  #         GH_TOKEN: ${{secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN}}
+  #     - name: Enable auto-merge for Dependabot PRs
+  #       if: ${{steps.metadata.outputs.update-type != 'version-update:semver-major'}}
+  #       run: gh pr merge --squash "$PR_URL"
+  #       env:
+  #         PR_URL: ${{github.event.pull_request.html_url}}
+  #         GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
