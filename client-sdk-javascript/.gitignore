@@ -4,5 +4,6 @@ dist
 .idea
 .node-version
 **/.dev.vars
+**/.wrangler
 *.tgz
 !.vscode/*code-workspace
